@@ -12,6 +12,10 @@ const userProfileSchema = new Schema(
     verificationCode: {
       type: Number,
     },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
