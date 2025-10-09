@@ -22,7 +22,6 @@ module.exports = {
         return;
       }
 
-      // Prefer interaction.member; fetch if not available in cache
       let member = interaction.member;
       if (!member || !member.roles) {
         member = await interaction.guild.members
