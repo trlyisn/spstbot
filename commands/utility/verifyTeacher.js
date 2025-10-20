@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 
 function sendVerificationEmail(to, verificationCode) {
   const mailOptions = {
-    from: "vrancl07@gmail.com",
+    from: "studenti@spst.eu",
     to: to,
     subject: "Verification Code",
     text: `Your verification code is: ${verificationCode}`,
