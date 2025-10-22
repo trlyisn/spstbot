@@ -18,8 +18,8 @@ function sendVerificationEmail(to, verificationCode) {
   const mailOptions = {
     from: "studenti@spst.eu",
     to: to,
-    subject: "Verification Code",
-    text: `Your verification code is: ${verificationCode}`,
+    subject: "Ověření emailu",
+    text: `Váš ověřovací kód je: ${verificationCode}`,
   };
 
   transporter.sendMail(mailOptions, (error, info) => {
