@@ -45,7 +45,7 @@ module.exports = {
     const endpart = "@spst.cz";
     const email = firstpart + endpart;
     try {
-      await interaction.deferReply();
+      await interaction.deferReply({ ephemeral: true });
       let userProfile = await UserProfile.findOne({
         userId: interaction.user.id,
       });
@@ -61,9 +61,10 @@ module.exports = {
       userProfile.verificationCode = verificationCodeGEN;
       await userProfile.save();
       sendVerificationEmail(email, verificationCodeGEN);
-      return interaction.editReply(
-        `Zaslali jsme vám kód na email **${email}**`
-      );
+      return interaction.editReply({
+        content: `Zaslali jsme vám kód na email **${email}**`,
+        ephemeral: true,
+      });
     } catch (error) {
       console.log(`Error handling /verify: ${error}`);
     }

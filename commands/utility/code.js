@@ -1,5 +1,5 @@
 const UserProfile = require("../../schemas/UserProfile");
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 require("dotenv").config();
 
 module.exports = {
@@ -12,13 +12,14 @@ module.exports = {
   async execute(interaction) {
     const inputCode = interaction.options.getNumber("code");
     try {
-      await interaction.deferReply();
+      await interaction.deferReply({ ephemeral: true });
 
       const roleId = process.env.VERIFIED_ROLE_ID;
       if (!roleId) {
-        await interaction.editReply(
-          "Server není nastavený: chybí VERIFIED_ROLE_ID v .env."
-        );
+        await interaction.editReply({
+          content: "Server není nastavený: chybí VERIFIED_ROLE_ID v .env.",
+          ephemeral: true,
+        });
         return;
       }
 
@@ -29,9 +30,10 @@ module.exports = {
           .catch(() => null);
       }
       if (!member) {
-        await interaction.editReply(
-          "Nepodařilo se načíst uživatele na serveru."
-        );
+        await interaction.editReply({
+          content: "Nepodařilo se načíst uživatele na serveru.",
+          ephemeral: true,
+        });
         return;
       }
 
@@ -44,9 +46,11 @@ module.exports = {
 
       const userCode = userProfile.verificationCode;
       if (!userCode) {
-        await interaction.editReply(
-          "Nemáte uložený verifikační kód. Pošlete si znovu kód a opakujte příkaz."
-        );
+        await interaction.editReply({
+          content:
+            "Nemáte uložený verifikační kód. Pošlete si znovu kód a opakujte příkaz.",
+          ephemeral: true,
+        });
         return;
       }
 
@@ -58,19 +62,45 @@ module.exports = {
           .add(roleId)
           .catch((err) => console.error("Failed to add role:", err));
 
-        await interaction.editReply(
-          "Zadali jste správný kód. Role byla přidána."
-        );
+        await interaction.editReply({
+          content: "Zadali jste správný kód. Role byla přidána.",
+          ephemeral: true,
+        });
+
+        const modLogEmbed = new EmbedBuilder()
+          .setTitle("User Verified")
+          .setColor(0x00ff00)
+          .addFields(
+            { name: "Username", value: `${member}` },
+            { name: "User ID", value: `${interaction.user.id}` },
+            { name: "Email", value: `${userProfile.email}` }
+          )
+          .setTimestamp();
+
+        // Send to mod log channel
+        const modLogChannelId = process.env.MODLOG_CHANNEL_ID;
+        if (modLogChannelId) {
+          const modLogChannel = await interaction.guild.channels.fetch(
+            modLogChannelId
+          );
+          if (modLogChannel) {
+            await modLogChannel.send({ embeds: [modLogEmbed] });
+          }
+        }
       } else {
-        await interaction.editReply("Zadali jste špatný kód.");
+        await interaction.editReply({
+          content: "Zadali jste špatný kód.",
+          ephemeral: true,
+        });
       }
     } catch (error) {
       console.error(`Error handling /code: ${error}`);
       try {
         if (interaction.deferred || interaction.replied) {
-          await interaction.editReply(
-            "Došlo k chybě při ověřování. Kontaktujte administrátora."
-          );
+          await interaction.editReply({
+            content: "Došlo k chybě při ověřování. Kontaktujte administrátora.",
+            ephemeral: true,
+          });
         } else {
           await interaction.reply({
             content: "Došlo k chybě při ověřování. Kontaktujte administrátora.",
